@@ -1,0 +1,417 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Игра - Найди пару</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://static.codepen.io/assets/common/stopExecutionOnTimeout-de7e2ef6bfefd24b79a3f68b414b87b8db5b08439cac3f1012092b2290c719cd.js"></script>
+<style>
+      body{
+    background-color: #fff; 
+    margin-left: 0px;
+    margin-right: 0px; 
+    margin-top: 50px; 
+    margin-bottom: 0px;        
+}
+
+#container{
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: auto;
+	text-align: center; 
+}
+
+.back{
+	display: inline-block;
+	background-color: #fff;
+    border: 1px solid grey;
+    width: 100px; 
+    height: 100px;     
+}
+
+/*.back:hover{
+    background-color: white;
+    
+}*/
+
+/**********************
+*    Color Squares
+***********************/
+.sq-blue{
+    background-color: #0000FF;
+}
+
+.sq-yellow{
+    background-color: #FFFF66;   
+}
+.sq-green{
+    background-color: #00FF00;   
+}
+.sq-grey{
+    background-color: #A0A0A0;  
+}
+.sq-red{
+    background-color: #FF0000;    
+}
+.sq-pink{
+    background-color: #FF33FF;    
+}
+.sq-orange{
+    background-color: #FF8000;    
+}
+.sq-aqua{
+    background-color: #00FFFF;    
+}
+
+.timer {
+	display: inline-block;
+	margin: 0 1rem;
+}
+
+/*************** WINNER BOX ***************/
+
+
+.overlay {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: #000000b3;
+	transition: opacity 500ms;
+	visibility: hidden;
+	opacity: 0;
+}
+
+.overlay:target {
+	visibility: visible;
+	opacity: 1;
+}
+  
+.popup {
+	margin: 70px auto;
+	padding: 20px;
+	background: #524b4b;
+	border-radius: 5px;
+	width: 50%;
+	position: relative;
+	transition: all 5s ease-in-out;
+	font-family: 'Exo', sans-serif;
+	opacity: 0.85;
+	transition: opacity 0.4s linear 0s;
+}
+  
+.popup h2 {
+	margin-top: 0;
+	color: #66FCF1;
+	font-family: 'Alegreya Sans SC', sans-serif;
+}
+
+.popup .close {
+	position: absolute;
+	top: 20px;
+	right: 30px;
+	transition: all 200ms;
+	font-size: 30px;
+	font-weight: bold;
+	text-decoration: none;
+	color: #66FCF1;
+}
+
+.popup .congratulations,
+.gamestats {
+	max-height: 20%;
+	overflow: auto;
+	text-align: center;
+}
+
+.show {
+	visibility: visible !important;
+	opacity: 100 !important;
+}
+
+    </style>
+<script>
+  window.console = window.console || function(t) {};
+</script>
+<script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+</head>
+<body>
+<div id="container">
+<div id="sq-1" class="back"></div>
+<div id="sq-2" class="back"></div>
+<div id="sq-3" class="back"></div>
+<div id="sq-4" class="back"></div>
+<br />
+<div id="sq-5" class="back"></div>
+<div id="sq-6" class="back"></div>
+<div id="sq-7" class="back"></div>
+<div id="sq-8" class="back"></div>
+<br />
+<div id="sq-9" class="back"></div>
+<div id="sq-10" class="back"></div>
+<div id="sq-11" class="back"></div>
+<div id="sq-12" class="back"></div>
+<br />
+<div id="sq-13" class="back"></div>
+<div id="sq-14" class="back"></div>
+<div id="sq-15" class="back"></div>
+<div id="sq-16" class="back"></div>
+<section class="score-panel">
+<div class="timer">
+</div>
+<button class="startGame">Старт</button>
+</section>
+<div id="popup1" class="overlay">
+<div class="popup">
+<a class="close" href = #>×</a><br>
+<div class="congratulations">
+Вы выиграли!
+</div>
+<div class="gamestats">
+<p>Затраченное время:<span id = totalTime></span></p>
+</div>
+<button id="btn">Ok</button>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
+
+<script id="rendered-js">
+document.querySelector(".startGame").addEventListener("click", startGame);
+
+function startGame() {
+// color bank
+var colors = ['blue', 'yellow', 'green', 'grey', 'red', 'pink', 'orange', 'aqua'];
+
+// array used to track which colors have been assigned twice
+var usedColors = [];
+
+// array used to store the location of the assigned colors	
+var assignedColors = new Array(17);
+
+var colorPicked = false;
+var counter = { blue: 0, yellow: 0, green: 0, grey: 0, red: 0, pink: 0, orange: 0, aqua: 0 };
+var class1, class2;
+var firstEle, secondEle;
+var clickedSquare = false;
+var matches = 0;
+
+var main = function() {
+
+  assignedColors[0] = ' ';
+  assignColors();
+  console.log(assignedColors);
+
+
+  $('.back').click(function (event) {
+
+    var card = event.target.id;
+    var id = parseID(card);
+
+    $(this).toggleClass('sq-' + assignedColors[id]);
+
+    if (clickedSquare == false) {
+      firstEle = $(this);
+      class1 = 'sq-' + assignedColors[id];
+      clickedSquare = true;
+    } else
+    {
+      secondEle = $(this);
+      class2 = 'sq-' + assignedColors[id];
+      checkMatch();
+    }
+  });
+};
+
+function checkMatch() {
+  console.log('entered check match');
+  if (class1 == class2) {
+    firstEle.toggleClass('matched');
+    secondEle.toggleClass('matched');
+    console.log('matched');
+     matches++;
+  } else
+
+  {
+
+    // Shortly pause to allow second card color to be seen
+    setTimeout(function () {
+      firstEle.toggleClass(class1);
+      secondEle.toggleClass(class2);
+    }, 300);
+
+  }
+  clickedSquare = false;
+}
+
+// parses the ID of the clicked square and
+// returns the number 
+function parseID(card) {
+  var len = card.length;
+
+  if (len == 5)
+  {
+    var num = card[3] + card[4];
+    //console.log(num); 
+  } else
+
+  {
+    var num = card[3];
+    //console.log(num);
+  }
+
+  return Number(num);
+}
+
+// Assign 8 different colors to different array cells
+// These will then be assigned to individual div elements
+function assignColors() {
+  for (var i = 1; i <= 16; i++) {if (window.CP.shouldStopExecution(0)) break;
+
+    while (!colorPicked) {if (window.CP.shouldStopExecution(1)) break;
+      console.log('entered loop');
+      var num = Math.round(Math.random() * 7);
+
+      var color = colors[num];
+      console.log(usedColors.indexOf(color));
+
+      if (usedColors.indexOf(color) == -1) {
+        console.log('entered check');
+        incrementColor(color);
+        assignedColors[i] = color;
+        colorPicked = true;
+      }
+    }window.CP.exitedLoop(1);
+
+    colorPicked = false;
+  }window.CP.exitedLoop(0);
+}
+
+// Increment the color objects 
+// If a color has been used twice push the color
+// to the useColors array
+function incrementColor(color) {
+  if (color == 'blue') {
+    counter.blue = counter.blue + 1;
+    if (counter.blue == 2)
+    usedColors.push(color);
+  } else
+  if (color == 'yellow') {
+    counter.yellow = counter.yellow + 1;
+    if (counter.yellow == 2)
+    usedColors.push(color);
+  } else
+  if (color == 'green') {
+    counter.green = counter.green + 1;
+    if (counter.green == 2)
+    usedColors.push(color);
+  } else
+  if (color == 'grey') {
+    counter.grey = counter.grey + 1;
+    if (counter.grey == 2)
+    usedColors.push(color);
+  } else
+  if (color == 'red') {
+    counter.red = counter.red + 1;
+    if (counter.red == 2)
+    usedColors.push(color);
+  } else
+  if (color == 'pink') {
+    counter.pink = counter.pink + 1;
+    if (counter.pink == 2)
+    usedColors.push(color);
+  } else
+  if (color == 'orange') {
+    counter.orange = counter.orange + 1;
+    if (counter.orange == 2)
+    usedColors.push(color);
+  } else
+  if (color == 'aqua') {
+    counter.aqua = counter.aqua + 1;
+    if (counter.aqua == 2)
+    usedColors.push(color);
+  }
+
+  console.log(usedColors);
+  //printCounter(); 
+}
+
+// Used for debugging
+function printCounter() {
+  console.log("blue: " + counter.blue);
+  console.log("orange: " + counter.orange);
+  console.log("yellow: " + counter.yellow);
+  console.log("green: " + counter.green);
+  console.log("aqua: " + counter.aqua);
+  console.log("red: " + counter.red);
+  console.log("grey: " + counter.grey);
+  console.log("pink: " + counter.pink);
+}
+
+$(document).ready(main);
+// STARTS GAME AND SHUFFLES CARDS UPON RESTART
+document.body.onload = startGame();
+function startGame() {
+  second = 0;
+  minute = 0;
+  hour = 0;
+  var timer = document.querySelector(".timer");
+  timer.innerHTML = "00:00";
+  clearInterval(interval);
+}
+
+var timer = document.getElementById("timer");
+timer.addEventListener("click", startTimer, false);  
+
+// TIMER SETUP
+var second = 0,minute = 0;hour = 0;
+var timer = document.querySelector(".timer");
+var interval;
+function startTimer() {
+  interval = setInterval(function () {
+    timer.innerHTML = minute + ":" + second;
+    second++;
+    if (second == 60) {
+      minute++;
+      second = 0;
+    }
+    if (minute == 60) {
+      hour++;
+      minute = 0;
+    }
+  }, 1000);
+}
+}
+// POPUP WHEN ALL CARDS MATCHED: DISPLAY TIME, MOVES, STARS
+function congratulations() {
+  if (matched.length == 16) {
+    clearInterval(interval);
+    finalTime = timer.innerHTML;
+    modal.classList.add("show");
+
+    document.getElementById("totalTime").innerHTML = finalTime;
+
+    closeModal();
+  };
+}
+
+
+// ALLOWS CLOSING POPUP
+function closeModal() {
+  closeicon.addEventListener("click", function (e) {
+    modal.classList.remove("show");
+  });
+}
+
+    
+    </script>
+</body>
+</html>
