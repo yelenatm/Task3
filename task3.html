@@ -1,136 +1,271 @@
 
+
+
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
 <title>Игра - Найди пару</title>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script src="https://static.codepen.io/assets/common/stopExecutionOnTimeout-de7e2ef6bfefd24b79a3f68b414b87b8db5b08439cac3f1012092b2290c719cd.js"></script>
 <style>
-      body{
-    background-color: #fff; 
-    margin-left: 0px;
-    margin-right: 0px; 
-    margin-top: 50px; 
-    margin-bottom: 0px;        
+      /*----------------------------------  
+Global Styles
+------------------------------------*/
+* {
+	margin: 0;
+	padding: 0;
 }
 
-#container{
+/* border box fix */
+*,
+*::before,
+*::after {
+	box-sizing: inherit;
+}
+
+html {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: "Open Sans", sans-serif;
+	/*one Em roughly ten pixels (16 x 62.5% = 10)*/
+	font-size: 62.5%;
+	letter-spacing: 1.5px;
+	margin: 0;
+	text-align: center;
+}
+
+.container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	margin-top: 0.5em;
+}
+
+ul > li {
+	list-style: none;
+}
+
+.card,
+.reset-btn {
+	cursor: pointer;
+}
+
+.btn {
+	border-radius: 1em;
+	border: none;
+	color: #fff;
+	box-shadow: 5px 2px 20px 0 rgba(46, 61, 73, 0.5);
+	padding: 0.8em;
+}
+
+/*----------------------------------  
+Section - Score Panel
+------------------------------------*/
+
+.score-panel {
+	font-size: 1.4em;
+	padding: 1em 0 2em;
+}
+
+.star-rating > li {
+	display: inline-block;
+	padding: 0.5em;
+}
+
+.moves-counter {
+	padding: 0.5em;
+}
+
+.reset-btn {
+	background: #000;
+}
+
+.timer-container {
+	background: #fff;
+	border-radius: 0.5em;
+	color: #000;
+	margin: 0.5em;
+	padding: 0.5em;
+}
+
+.timer {
+	font-size: 1em;
+}
+
+/*----------------------------------  
+Section - Modal
+------------------------------------*/
+/*
+Help with the modal from
+https://www.w3schools.com/howto/howto_css_modals.asp
+*/
+
+/* Modal (background) */
+.modal {
+	/*Hidden by default */
+	display: none;
+	position: fixed;
+	z-index: 99;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	/* Fallback color */
+	background-color: rgb(46, 61, 73);
+	/* With opacity */
+	background-color: rgba(46, 61, 73, 0.6);
+}
+
+/* Modal Content/Box */
+.modal-content {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	background-color: #fff;
+	/* 5% from the top and centered */
+	margin: 5% auto;
+	border: 0.8em solid #fc4;
+	padding-right: 2em;
+	width: 80%;
+}
+
+/* The Close Button */
+.close {
+	align-self: flex-end;
+	color: #28e;
+	font-size: 5em;
+}
+
+.close:hover,
+.close:focus {
+	color: #5cf;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+/* Modal Image*/
+.modal-img {
+	display: inline-block;
+	margin: 1em 0 1em;
+	width: 20em;
+}
+
+p.stats {
+	font-weight: 600;
+}
+
+p.stats:last-child {
+	margin-bottom: 1em;
+}
+
+.play-again-btn {
+	background: #28e;
+	margin-bottom: 1em;
+}
+
+/*----------------------------------  
+Deck of Cards
+------------------------------------*/
+/*Mobile first responsivness*/
+.deck {	
 	margin-left: auto;
 	margin-right: auto;
 	margin-top: auto;
 	text-align: center; 
 }
 
-.back{
-	display: inline-block;
+.card {
+    display: inline-block;
 	background-color: #fff;
     border: 1px solid grey;
-    width: 100px; 
-    height: 100px;     
+    width: 150px; 
+    height: 150px;   
 }
 
-/*.back:hover{
-    background-color: white;
-    
-}*/
-
-/**********************
-*    Color Squares
-***********************/
-.sq-blue{
-    background-color: #0000FF;
+img {
+	user-select: none;
+	height: 150px;
+	width: 150px;
 }
 
-.sq-yellow{
-    background-color: #FFFF66;   
-}
-.sq-green{
-    background-color: #00FF00;   
-}
-.sq-grey{
-    background-color: #A0A0A0;  
-}
-.sq-red{
-    background-color: #FF0000;    
-}
-.sq-pink{
-    background-color: #FF33FF;    
-}
-.sq-orange{
-    background-color: #FF8000;    
-}
-.sq-aqua{
-    background-color: #00FFFF;    
-}
-
-.timer {
-	display: inline-block;
-	margin: 0 1rem;
-}
-
-/*************** WINNER BOX ***************/
-
-
-.overlay {
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	background: #000000b3;
-	transition: opacity 500ms;
+.deck img {
 	visibility: hidden;
-	opacity: 0;
 }
 
-.overlay:target {
+.deck .card.flip {
+	background: #fff;
+	cursor: default;
+	pointer-events: none;
+}
+
+.flip img {
+	background: #fff;
 	visibility: visible;
-	opacity: 1;
-}
-  
-.popup {
-	margin: 70px auto;
-	padding: 20px;
-	background: #524b4b;
-	border-radius: 5px;
-	width: 50%;
-	position: relative;
-	transition: all 5s ease-in-out;
-	font-family: 'Exo', sans-serif;
-	opacity: 0.85;
-	transition: opacity 0.4s linear 0s;
-}
-  
-.popup h2 {
-	margin-top: 0;
-	color: #66FCF1;
-	font-family: 'Alegreya Sans SC', sans-serif;
 }
 
-.popup .close {
-	position: absolute;
-	top: 20px;
-	right: 30px;
-	transition: all 200ms;
-	font-size: 30px;
-	font-weight: bold;
-	text-decoration: none;
-	color: #66FCF1;
+.deck .card.match {
+	visibility: visible;
+	cursor: default;
 }
 
-.popup .congratulations,
-.gamestats {
-	max-height: 20%;
-	overflow: auto;
-	text-align: center;
+.match img {
+	background: #39d;
 }
 
-.show {
-	visibility: visible !important;
-	opacity: 100 !important;
-}
+/*---------------------------------- 
+Desktops
+------------------------------------*/
+@media screen and (min-width: 800px) {
+	
+	h1 {
+		font-size: 6em;
+	}
 
+	p {
+		font-size: 2.3em;
+	}
+
+	.deck  {
+		height: 70em;
+		width: 70em;
+	}
+
+	.card {
+		height: 15em;
+		width: 15em;
+	}
+
+	.deck img {
+		width: 15em;
+	}
+
+	.reset-btn {
+		font-size: 0.8em;
+	}
+
+	.footer {
+		font-size: 1.2em;
+	}
+	
+	.modal-content h2 {
+		font-size: 5em;
+	}
+
+	/* Modal Image*/
+	.modal-img {
+		width: 30em;
+	}
+
+	.play-again-btn {
+		font-size: 2em;
+	}
+}
     </style>
 <script>
   window.console = window.console || function(t) {};
@@ -142,276 +277,293 @@
 </script>
 </head>
 <body>
-<div id="container">
-<div id="sq-1" class="back"></div>
-<div id="sq-2" class="back"></div>
-<div id="sq-3" class="back"></div>
-<div id="sq-4" class="back"></div>
-<br />
-<div id="sq-5" class="back"></div>
-<div id="sq-6" class="back"></div>
-<div id="sq-7" class="back"></div>
-<div id="sq-8" class="back"></div>
-<br />
-<div id="sq-9" class="back"></div>
-<div id="sq-10" class="back"></div>
-<div id="sq-11" class="back"></div>
-<div id="sq-12" class="back"></div>
-<br />
-<div id="sq-13" class="back"></div>
-<div id="sq-14" class="back"></div>
-<div id="sq-15" class="back"></div>
-<div id="sq-16" class="back"></div>
+<div class="container">
 <section class="score-panel">
-<div class="timer">
+<div class="timer-container">
+<span class="timer"><i class="fa fa-hourglass-start"></i>00:00</span>
 </div>
-<button class="startGame">Старт</button>
+<div class="startGame">
+<button id="startGame">Старт</button>
+</div>
 </section>
-<div id="popup1" class="overlay">
-<div class="popup">
-<a class="close" href = #>×</a><br>
-<div class="congratulations">
-Вы выиграли!
-</div>
-<div class="gamestats">
-<p>Затраченное время:<span id = totalTime></span></p>
-</div>
-<button id="btn">Ok</button>
+
+<section class="win-game-modal">
+<div id="modal" class="modal">
+
+<div class="modal-content">
+<span class="close">&times;</span>
+<h2>Вы выиграли!</h2>
 </div>
 </div>
+</section>
+<ul class="deck"></ul>
 </div>
-</div>
-</body>
-</html>
 
 <script id="rendered-js">
-document.querySelector(".startGame").addEventListener("click", startGame);
+      // Array of Deck of Card Images
+const deckCards = ["aqua.jpg", "aqua.jpg", "green.png", "green.png", "blue.jpg", "blue.jpg", "grey.png", "grey.png", "orange.jpg", "orange.jpg", "pink.png", "pink.png", "red.png", "red.png", "yellow.png", "yellow.png"];
+  
+// Global Arrays
+// Access the <ul> with class of .deck
+const deck = document.querySelector(".deck");
+// Create an empty array to store the opened cards
+let opened = [];
+// Create an empty array to store the matched cards
+let matched = [];
 
-function startGame() {
-// color bank
-var colors = ['blue', 'yellow', 'green', 'grey', 'red', 'pink', 'orange', 'aqua'];
+// Access the modal
+const modal = document.getElementById("modal");
 
-// array used to track which colors have been assigned twice
-var usedColors = [];
+// Access the reset button
+const start = document.querySelector(".start-btn");
 
-// array used to store the location of the assigned colors	
-var assignedColors = new Array(17);
+// Get the span tag for the timer.
+const timeCounter = document.querySelector(".timer");
+// To use this variable to stop the time started in timer
+let time;
+// Create variables for time count, start all at zero
+let minutes = 0;
+let seconds = 0;
+// For use in the click card event listener
+let timeStart = false;
 
-var colorPicked = false;
-var counter = { blue: 0, yellow: 0, green: 0, grey: 0, red: 0, pink: 0, orange: 0, aqua: 0 };
-var class1, class2;
-var firstEle, secondEle;
-var clickedSquare = false;
-var matches = 0;
+function shuffle(array) {
+  let currentIndex = array.length,temporaryValue,randomIndex;
 
-var main = function() {
-
-  assignedColors[0] = ' ';
-  assignColors();
-  console.log(assignedColors);
-
-
-  $('.back').click(function (event) {
-
-    var card = event.target.id;
-    var id = parseID(card);
-
-    $(this).toggleClass('sq-' + assignedColors[id]);
-
-    if (clickedSquare == false) {
-      firstEle = $(this);
-      class1 = 'sq-' + assignedColors[id];
-      clickedSquare = true;
-    } else
-    {
-      secondEle = $(this);
-      class2 = 'sq-' + assignedColors[id];
-      checkMatch();
-    }
-  });
-};
-
-function checkMatch() {
-  console.log('entered check match');
-  if (class1 == class2) {
-    firstEle.toggleClass('matched');
-    secondEle.toggleClass('matched');
-    console.log('matched');
-     matches++;
-  } else
-
-  {
-
-    // Shortly pause to allow second card color to be seen
-    setTimeout(function () {
-      firstEle.toggleClass(class1);
-      secondEle.toggleClass(class2);
-    }, 300);
-
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
   }
-  clickedSquare = false;
+  return array;
 }
-
-// parses the ID of the clicked square and
-// returns the number 
-function parseID(card) {
-  var len = card.length;
-
-  if (len == 5)
-  {
-    var num = card[3] + card[4];
-    //console.log(num); 
-  } else
-
-  {
-    var num = card[3];
-    //console.log(num);
+var button = document.createElement("button");
+const shuffledDeck = shuffle(deckCards);
+for (let i = 0; i < shuffledDeck.length; i++) {
+    // Create the <li> tags
+    const liTag = document.createElement('LI');
+    // Give <li> class of card
+    liTag.classList.add('card');
+    // Create the <img> tags
+    const addImage = document.createElement("IMG");
+    // Append <img> to <li>
+    liTag.appendChild(addImage);
+    // Set the img src path with the shuffled deck
+    addImage.setAttribute("src", "https://github.com/yelenatm/Task3/blob/master/assets/img/" + shuffledDeck[i] + "?raw=true");
+    // Add an alt tag to the image
+    addImage.setAttribute("alt", "blue");
+    // Update the new <li> to the deck <ul>
+    deck.appendChild(liTag);
   }
 
-  return Number(num);
+/*
+  TODO: Start Game: Shuffle the deck, create <li> tags and <img> 
+  tags and append to the deck <ul> with the new shuffled content
+  */
+function startGame() {	
+
 }
 
-// Assign 8 different colors to different array cells
-// These will then be assigned to individual div elements
-function assignColors() {
-  for (var i = 1; i <= 16; i++) {if (window.CP.shouldStopExecution(0)) break;
-
-    while (!colorPicked) {if (window.CP.shouldStopExecution(1)) break;
-      console.log('entered loop');
-      var num = Math.round(Math.random() * 7);
-
-      var color = colors[num];
-      console.log(usedColors.indexOf(color));
-
-      if (usedColors.indexOf(color) == -1) {
-        console.log('entered check');
-        incrementColor(color);
-        assignedColors[i] = color;
-        colorPicked = true;
-      }
-    }window.CP.exitedLoop(1);
-
-    colorPicked = false;
-  }window.CP.exitedLoop(0);
-}
-
-// Increment the color objects 
-// If a color has been used twice push the color
-// to the useColors array
-function incrementColor(color) {
-  if (color == 'blue') {
-    counter.blue = counter.blue + 1;
-    if (counter.blue == 2)
-    usedColors.push(color);
-  } else
-  if (color == 'yellow') {
-    counter.yellow = counter.yellow + 1;
-    if (counter.yellow == 2)
-    usedColors.push(color);
-  } else
-  if (color == 'green') {
-    counter.green = counter.green + 1;
-    if (counter.green == 2)
-    usedColors.push(color);
-  } else
-  if (color == 'grey') {
-    counter.grey = counter.grey + 1;
-    if (counter.grey == 2)
-    usedColors.push(color);
-  } else
-  if (color == 'red') {
-    counter.red = counter.red + 1;
-    if (counter.red == 2)
-    usedColors.push(color);
-  } else
-  if (color == 'pink') {
-    counter.pink = counter.pink + 1;
-    if (counter.pink == 2)
-    usedColors.push(color);
-  } else
-  if (color == 'orange') {
-    counter.orange = counter.orange + 1;
-    if (counter.orange == 2)
-    usedColors.push(color);
-  } else
-  if (color == 'aqua') {
-    counter.aqua = counter.aqua + 1;
-    if (counter.aqua == 2)
-    usedColors.push(color);
+/*
+             Remove all child nodes from the deck <li> tags and
+             <img> tags.  To be called in set everything function only
+             */
+function removeCard() {
+  // As long as <ul> deck has a child node, remove it
+  while (deck.hasChildNodes()) {
+    deck.removeChild(deck.firstChild);
   }
-
-  console.log(usedColors);
-  //printCounter(); 
 }
 
-// Used for debugging
-function printCounter() {
-  console.log("blue: " + counter.blue);
-  console.log("orange: " + counter.orange);
-  console.log("yellow: " + counter.yellow);
-  console.log("green: " + counter.green);
-  console.log("aqua: " + counter.aqua);
-  console.log("red: " + counter.red);
-  console.log("grey: " + counter.grey);
-  console.log("pink: " + counter.pink);
-}
-
-$(document).ready(main);
-// STARTS GAME AND SHUFFLES CARDS UPON RESTART
-document.body.onload = startGame();
-function startGame() {
-  second = 0;
-  minute = 0;
-  hour = 0;
-  var timer = document.querySelector(".timer");
-  timer.innerHTML = "00:00";
-  clearInterval(interval);
-}
-
-var timer = document.getElementById("timer");
-timer.addEventListener("click", startTimer, false);  
-
-// TIMER SETUP
-var second = 0,minute = 0;hour = 0;
-var timer = document.querySelector(".timer");
-var interval;
-function startTimer() {
-  interval = setInterval(function () {
-    timer.innerHTML = minute + ":" + second;
-    second++;
-    if (second == 60) {
-      minute++;
-      second = 0;
+/*
+  Update the timer in the HTML for minutes and seconds
+  This timer() function is invoked in the event listener
+  on the first card click
+  Used: https://www.w3schools.com/js/js_timing.asp
+  */
+function timer() {
+  // Update the count every 1 second
+  time = setInterval(function () {
+    seconds++;
+    if (seconds === 60) {
+      minutes++;
+      seconds = 0;
     }
-    if (minute == 60) {
-      hour++;
-      minute = 0;
-    }
+    // Update the timer in HTML with the time it takes the user to play the game
+    timeCounter.innerHTML = "<i class='fa fa-hourglass-start'></i>" + " Timer: " + minutes + " Mins " + seconds + " Secs";
   }, 1000);
 }
+
+/*
+  Stop the timer once the user has matched
+  all 16 cards, total of 8 pairs
+  Used: https://www.w3schools.com/js/js_timing.asp
+  */
+function stopTime() {
+  clearInterval(time);
 }
-// POPUP WHEN ALL CARDS MATCHED: DISPLAY TIME, MOVES, STARS
-function congratulations() {
-  if (matched.length == 16) {
-    clearInterval(interval);
-    finalTime = timer.innerHTML;
-    modal.classList.add("show");
+/*
+  Compare two cards to see if they match or not
+  */
+function compareTwo() {
+  // When there are 2 cards in the opened array
+  if (opened.length === 2) {
+    // Disable any further mouse clicks on other cards
+    document.body.style.pointerEvents = "none";
+  }
+  // Compare the two images src
+  if (opened.length === 2 && opened[0].src === opened[1].src) {
+    // If matched call match()
+    match();
+    // console.log("It's a Match!");
+  } else if (opened.length === 2 && opened[0].src != opened[1].src) {
+    // If No match call noMatch()
+    noMatch();
+    // console.log("NO Match!");
+  }
+}
 
-    document.getElementById("totalTime").innerHTML = finalTime;
+/*
+  If the two cards match, keep the cards open and
+  apply class of match
+  */
+function match() {
+  /* Access the two cards in opened array and add
+                  the class of match to the imgages parent: the <li> tag
+                  */
+  setTimeout(function () {
+    opened[0].parentElement.classList.add("match");
+    opened[1].parentElement.classList.add("match");
+    // Push the matched cards to the matched array
+    matched.push(...opened);
+    // Allow for further mouse clicks on cards
+    document.body.style.pointerEvents = "auto";
+    // Check to see if the game has been won with all 8 pairs
+    winGame();
+    // Clear the opened array
+    opened = [];
+  }, 600);
 
-    closeModal();
+}
+
+/*
+  If the two cards do not match, remove the cards
+  from the opened array and flip the cards back over by
+  removing the flip class.
+  */
+function noMatch() {
+  /* After 700 miliseconds the two cards open will have
+                    the class of flip removed from the images parent element <li>*/
+  setTimeout(function () {
+    // Remove class flip on images parent element
+    opened[0].parentElement.classList.remove("flip");
+    opened[1].parentElement.classList.remove("flip");
+    // Allow further mouse clicks on cards
+    document.body.style.pointerEvents = "auto";
+    // Remove the cards from opened array
+    opened = [];
+  }, 700);
+
+}
+
+/*
+  Get stats on the time, how many moves, and star rating
+  for the end game and update the modal with these stats
+  */
+function AddStats() {
+  // Access the modal content div
+  const stats = document.querySelector(".modal-content");
+  // Create three different paragraphs
+  for (let i = 1; i <= 3; i++) {
+    // Create a new Paragraph
+    const statsElement = document.createElement("p");
+    // Add a class to the new Paragraph
+    statsElement.classList.add("stats");
+    // Add the new created <p> tag to the modal content
+    stats.appendChild(statsElement);
+  }
+  // Select all p tags with the class of stats and update the content
+  let p = stats.querySelectorAll("p.stats");
+  // Set the new <p> to have the content of stats (time, moves and star rating)
+  p[0].innerHTML = "Затраченное время: " + minutes + " Minutes and " + seconds + " Seconds";
+}
+
+function displayModal() {
+  // Access the modal <span> element (x) that closes the modal
+  const modalClose = document.getElementsByClassName("close")[0];
+  // When the game is won set modal to display block to show it
+  modal.style.display = "block";
+
+  // When the user clicks on <span> (x), close the modal
+  modalClose.onclick = function () {
+    modal.style.display = "none";
+  };
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function (event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
   };
 }
 
-
-// ALLOWS CLOSING POPUP
-function closeModal() {
-  closeicon.addEventListener("click", function (e) {
-    modal.classList.remove("show");
-  });
+/*
+  Check the length of the matched array and if there
+  are 8 pairs 16 cards all together then the game is won.
+  Stop the timer update the modal with stats and show the modal
+  */
+function winGame() {
+  if (matched.length === 16) {
+    stopTime();
+    AddStats();
+    displayModal();
+  }
 }
 
-    
+/*----------------------------------  
+  Main Event Listener
+  ------------------------------------*/
+/*
+                                         Event Listener if a card <li> is clicked
+                                         call flipCard()
+                                         */
+deck.addEventListener("click", function (evt) {
+  if (evt.target.nodeName === "LI") {
+    // To console if I was clicking the correct element 
+    console.log(evt.target.nodeName + " Was clicked");
+    // Start the timer after the first click of one card
+    // Executes the timer() function
+    if (timeStart === false) {
+      timeStart = true;
+      timer();
+    }
+    // Call flipCard() function
+    flipCard();
+  }
+
+  //Flip the card and display cards img
+  function flipCard() {
+    // When <li> is clicked add the class .flip to show img
+    evt.target.classList.add("flip");
+    // Call addToOpened() function
+    addToOpened();
+  }
+
+  //Add the flipped cards to the empty array of opened
+  function addToOpened() {
+    /* If the opened array has zero or one other img push another 
+                          img into the array so we can compare these two to be matched
+                          */
+    if (opened.length === 0 || opened.length === 1) {
+      // Push that img to opened array
+      opened.push(evt.target.firstElementChild);
+    }
+    // Call compareTwo() function
+    compareTwo();
+  }
+}); //Event Listener
+
     </script>
 </body>
 </html>
